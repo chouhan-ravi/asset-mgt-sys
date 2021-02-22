@@ -1,0 +1,73 @@
+# docker-compose.yml
+version: '3.6'
+services:
+  nodeapi:
+    container_name: node_api
+    restart: always
+    build: ./node-app
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.10
+    ports:
+      - 3000:3000
+    environment:
+      CORS_URL: http://localhost:8080
+      POSTGRES_DATABASE_URL: postgres://postgres:postgres@10.5.0.5:5432/assetdb
+      POSTGRES_HOST: postgresdb
+      POSTGRES_PROTOCOL: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: assetdb
+      POSTGRES_DIALECT: postgres
+      PORT: 3000
+      
+    depends_on:
+      - postgresdb
+    links:
+      - postgresdb
+
+  postgresdb:
+    container_name: postgres_db
+    restart: always
+    image: postgres
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.5
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: assetdb
+
+  vueapp:
+    container_name: vue_app
+    restart: always
+    build: ./vue-app
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.11
+    ports: 
+      - 8080:8080
+    environment: 
+      API_URL: http://localhost:3000
+      BASIC_AUTH_KEY: dGVzdDp0ZXN0 # test:test
+      PORT: 8080
+    
+    depends_on: 
+      - nodeapi
+    links:
+      - nodeapi
+
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          # gateway: 10.5.0.1
+
+volumes:
+  postgres_data:

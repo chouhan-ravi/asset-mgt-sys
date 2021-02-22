@@ -1,0 +1,25 @@
+module.exports = app => {
+    const assets = require("../controllers/asset.controller.js");
+  
+    var router = require("express").Router();
+  
+    // Create a new alarm
+    router.post("/", assets.create);
+  
+    // Retrieve all assets
+    router.get("/", assets.findAll);
+  
+    // Retrieve a single alarm with id
+    router.get("/:id", assets.findOne);
+  
+    // Update a alarm with id
+    router.put("/:id", assets.update);
+  
+    // Delete a alarm with id
+    router.delete("/:id", assets.delete);
+  
+    // Create a new alarm
+    router.delete("/", assets.deleteAll);
+  
+    app.use('/api/assets', router);
+};
